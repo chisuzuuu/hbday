@@ -63,4 +63,48 @@ function Letter(char, x, y) {
   var hue = (x / opts.totalWidth) * 360;
   this.color = `hsl(${hue}, 80%, 50%)`;
   this.lightColor = `hsl(${hue}, 80%, 80%)`;
-  this.alphaColor = `h
+  this.alphaColor = `hsla(${hue}, 80%, 50%, 0)`;
+
+  this.reset();
+}
+
+Letter.prototype.reset = function() {
+  this.phase = "firework";
+  this.tick = 0;
+  this.spawned = false;
+  this.spawningTime = opts.fireworkSpawnTime * Math.random() | 0;
+};
+
+// Create letters for "Happy Birthday Lenard"
+let letters = [];
+const message = "Happy Birthday Lenard";
+const startX = canvas.width / 2 - message.length * opts.charSize / 2;
+for (let i = 0; i < message.length; i++) {
+  letters.push(new Letter(message[i], startX + i * opts.charSize, canvas.height / 2));
+}
+
+// Animate letters
+function animate() {
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  letters.forEach(letter => {
+    // Simple rising animation like a firework
+    if (letter.y > letter.fireworkDy) letter.y -= 2;
+    ctx.fillStyle = letter.color;
+    ctx.font = `${opts.charSize}px Verdana`;
+    ctx.fillText(letter.char, letter.x, letter.y);
+  });
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+</body>
+</html>

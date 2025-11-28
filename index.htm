@@ -14,6 +14,30 @@
       top: 0;
       left: 0;
     }
+    p {
+        margin: 0 0;
+        position: absolute;
+        font: 16px Verdana;
+        color: #eee;
+        height: 25px;
+        top: calc(100vh - 30px);
+        text-shadow: 0 0 2px white;
+    }
+    p a {
+      text-decoration: none;
+      color: #aaa;
+    }
+    span {
+      font-size: 11px;
+    }
+    p > a:first-of-type {
+      font-size: 20px;
+    }
+    body {
+      overflow: hidden;
+    }
+
+    }
   </style>
 </head>
 <body>
@@ -22,6 +46,7 @@
 
 <script>
 const c = document.getElementById("c");
+
 let w = (c.width = window.innerWidth),
     h = (c.height = window.innerHeight),
     ctx = c.getContext("2d"),
@@ -64,7 +89,11 @@ let opts = {
   balloonBaseVel: 0.4,
   balloonAddedVel: 0.4,
   balloonBaseRadian: -(Math.PI / 2 - 0.5),
-  balloonAddedRadian: -1,
+  balloonAddedRadian: -1
+};
+
+let calc = {
+  totalWidth: opts.charSpacing * Math.max(...opts.strings.map(s => s.length))
 };
 
 let Tau = Math.PI * 2;
@@ -77,14 +106,16 @@ function Letter(char, x, y) {
   this.char = char;
   this.x = x;
   this.y = y;
+
   this.dx = -ctx.measureText(char).width / 2;
   this.dy = opts.charSize / 2;
   this.fireworkDy = this.y - hh;
 
-  let hue = (x / (opts.charSpacing * 10)) * 360;
+  let hue = (x / calc.totalWidth) * 360;
   this.color = `hsl(${hue},80%,50%)`;
-  this.alphaColor = `hsla(${hue},80%,50%,alp)`;
+  this.lightAlphaColor = `hsla(${hue},80%,light%,alp)`;
   this.lightColor = `hsl(${hue},80%,70%)`;
+  this.alphaColor = `hsla(${hue},80%,50%,alp)`;
 
   this.reset();
 }
@@ -94,7 +125,10 @@ Letter.prototype.reset = function () {
   this.tick = 0;
   this.spawned = false;
   this.spawningTime = (opts.fireworkSpawnTime * Math.random()) | 0;
-  this.reachTime = (opts.fireworkBaseReachTime + opts.fireworkAddedReachTime * Math.random()) | 0;
+  this.reachTime =
+    (opts.fireworkBaseReachTime + opts.fireworkAddedReachTime * Math.random()) | 0;
+  this.lineWidth =
+    opts.fireworkBaseLineWidth + opts.fireworkAddedLineWidth * Math.random();
   this.prevPoints = [[0, hh, 0]];
 };
 
@@ -107,13 +141,19 @@ Letter.prototype.step = function () {
       }
     } else {
       ++this.tick;
+
       let p = this.tick / this.reachTime;
       let x = p * this.x;
       let y = hh + Math.sin(p * TauQuarter) * this.fireworkDy;
-      this.prevPoints.push([x, y]);
+
+      if (this.prevPoints.length > opts.fireworkPrevPoints)
+        this.prevPoints.shift();
+
+      this.prevPoints.push([x, y, p * this.lineWidth]);
 
       for (let i = 1; i < this.prevPoints.length; i++) {
         ctx.strokeStyle = this.alphaColor.replace("alp", i / this.prevPoints.length);
+        ctx.lineWidth = this.prevPoints[i][2];
         ctx.beginPath();
         ctx.moveTo(this.prevPoints[i - 1][0], this.prevPoints[i - 1][1]);
         ctx.lineTo(this.prevPoints[i][0], this.prevPoints[i][1]);
@@ -130,23 +170,25 @@ Letter.prototype.step = function () {
 
 function anim() {
   requestAnimationFrame(anim);
+
+  ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, w, h);
 
-  let i = 0;
-  opts.strings.forEach((line, row) => {
-    for (let col = 0; col < line.length; col++) {
-      if (!letters[i]) {
-        letters[i] = new Letter(
-          line[col],
-          col * opts.charSpacing - (line.length * opts.charSpacing) / 2,
-          row * opts.lineHeight - (opts.strings.length * opts.lineHeight) / 2
+  let index = 0;
+  for (let i = 0; i < opts.strings.length; i++) {
+    for (let j = 0; j < opts.strings[i].length; j++) {
+      if (!letters[index]) {
+        letters[index] = new Letter(
+          opts.strings[i][j],
+          j * opts.charSpacing - (opts.strings[i].length * opts.charSpacing) / 2,
+          i * opts.lineHeight - (opts.strings.length * opts.lineHeight) / 2
         );
       }
-      letters[i].step();
-      i++;
+      letters[index].step();
+      index++;
     }
-  });
+  }
 }
 
 anim();
@@ -161,3 +203,4 @@ window.addEventListener("resize", () => {
 
 </body>
 </html>
+

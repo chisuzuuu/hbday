@@ -47,61 +47,20 @@ canvas.height = window.innerHeight;
 const opts = {
   fireworkSpawnTime: 50,
   chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()",
-  charSize: 16,
+  charSize: 20,
   totalWidth: canvas.width
 };
 
+// Letter class with firework effect
 function Letter(char, x, y) {
   this.char = char;
   this.x = x;
   this.y = y;
   this.dx = ctx.measureText(char).width / 2;
   this.dy = opts.charSize / 2;
-  this.fireworkDy = this.y - 100;
+  this.fireworkDy = this.y - 150;
 
   var hue = (x / opts.totalWidth) * 360;
   this.color = `hsl(${hue}, 80%, 50%)`;
   this.lightColor = `hsl(${hue}, 80%, 80%)`;
-  this.alphaColor = `hsla(${hue}, 80%, 50%, 0)`;
-
-  this.reset();
-}
-
-Letter.prototype.reset = function() {
-  this.phase = "firework";
-  this.tick = 0;
-  this.spawned = false;
-  this.spawningTime = opts.fireworkSpawnTime * Math.random() | 0;
-};
-
-// Create letters for "Happy Birthday Lenard"
-let letters = [];
-const message = "Happy Birthday Lenard";
-const startX = canvas.width / 2 - message.length * opts.charSize / 2;
-for (let i = 0; i < message.length; i++) {
-  letters.push(new Letter(message[i], startX + i * opts.charSize, canvas.height / 2));
-}
-
-// Animation
-function animate() {
-  ctx.fillStyle = "rgba(0,0,0,0.2)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  letters.forEach(letter => {
-    ctx.fillStyle = letter.color;
-    ctx.font = `${opts.charSize}px Verdana`;
-    ctx.fillText(letter.char, letter.x, letter.y);
-  });
-
-  requestAnimationFrame(animate);
-}
-
-animate();
-
-window.addEventListener('resize', () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
-</script>
-</body>
-</html>
+  this.alphaColor = `h
